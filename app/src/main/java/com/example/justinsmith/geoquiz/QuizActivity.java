@@ -2,10 +2,8 @@ package com.example.justinsmith.geoquiz;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -42,7 +40,6 @@ public class QuizActivity extends AppCompatActivity {
     private int mCurrentIndex = 0;
     private int mAnswered = 0;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,7 +108,6 @@ public class QuizActivity extends AppCompatActivity {
         mCheatButton.setEnabled(!question.isAnswered());
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void checkAnswer(boolean userAnswer) {
         Question question = mQuestionBank[mCurrentIndex];
         question.setUserAnswer(userAnswer);
