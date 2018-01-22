@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.util.Locale;
+
 public class CheatActivity extends AppCompatActivity {
 
     private static final String EXTRA_ANSWER_IS_TRUE =
@@ -77,8 +79,8 @@ public class CheatActivity extends AppCompatActivity {
                 mShowAnswerButton.setVisibility(View.INVISIBLE);
             }
         });
-        
+
         mApi = findViewById(R.id.api_level);
-        mApi.setText(Build.VERSION.SDK_INT);
+        mApi.setText(String.format(Locale.getDefault(),"API level %d", Build.VERSION.SDK_INT));
     }
 }
