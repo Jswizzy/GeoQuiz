@@ -1,5 +1,7 @@
 package com.example.justinsmith.geoquiz;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,12 +21,15 @@ public class QuizActivity extends AppCompatActivity {
 
     public static final String TAG = "QuizActivity";
     public static final String KEY_INDEX = "index";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
     private Button mFalseButton;
+    private Button mCheatButton;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
     private TextView mQuestionTextView;
+    private boolean mIsCheater;
 
     private Question[] mQuestionBank = new Question[]{
             new Question(R.string.question_australia, true),
@@ -50,13 +55,22 @@ public class QuizActivity extends AppCompatActivity {
         mQuestionTextView.setOnClickListener(
                 next());
 
+        mCheatButton = findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(
+                v -> {
+                    boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                    Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                    startActivityForResult(intent, REQUEST_CODE_CHEAT);
+                }
+        );
+
         mTrueButton = findViewById(R.id.true_button);
         mTrueButton.setOnClickListener(
-                (v) -> checkAnswer(true)
+                v -> checkAnswer(true)
         );
         mFalseButton = findViewById(R.id.false_button);
         mFalseButton.setOnClickListener(
-                (v) -> checkAnswer(false)
+                v -> checkAnswer(false)
         );
 
         mPrevButton = findViewById(R.id.prev_button);
@@ -70,7 +84,7 @@ public class QuizActivity extends AppCompatActivity {
 
     @NonNull
     private View.OnClickListener next() {
-        return (v) -> {
+        return v -> {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
             updateQuestion();
         };
@@ -78,7 +92,7 @@ public class QuizActivity extends AppCompatActivity {
 
     @NonNull
     private View.OnClickListener prev() {
-        return (v) -> {
+        return v -> {
             mCurrentIndex =
                     mCurrentIndex - 1 < 0
                             ? mCurrentIndex = mQuestionBank.length - 1
@@ -94,6 +108,7 @@ public class QuizActivity extends AppCompatActivity {
         mQuestionTextView.setText(id);
         mTrueButton.setEnabled(!question.isAnswered());
         mFalseButton.setEnabled(!question.isAnswered());
+        mCheatButton.setEnabled(!question.isAnswered());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -103,11 +118,14 @@ public class QuizActivity extends AppCompatActivity {
         question.setAnswered();
         mTrueButton.setEnabled(false);
         mFalseButton.setEnabled(false);
+        mCheatButton.setEnabled(false);
 
-        int messageResId =
-                question.isCorrect()
-                        ? R.string.correct_toast
-                        : R.string.incorrect_toast;
+
+        int messageResId;
+
+        if (mIsCheater) messageResId = R.string.judgment_toast;
+        else if (question.isCorrect()) messageResId = R.string.correct_toast;
+        else messageResId = R.string.incorrect_toast;
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
                 .show();
@@ -122,6 +140,20 @@ public class QuizActivity extends AppCompatActivity {
                             mQuestionBank.length),
                     Toast.LENGTH_LONG)
                     .show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            if (data == null) {
+                return;
+            }
+            mIsCheater = CheatActivity.wasAnswerShown(data);
+        }
     }
 
     @Override
